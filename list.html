@@ -1,0 +1,44 @@
+  sel.innerHTML = '<option value="">Choose a category</option>';
+  (res.data || []).forEach(function (c) {
+    const o = document.createElement("option");
+    o.value = c.id;
+    o.textContent = c.name;
+    sel.appendChild(o);
+  });
+}
+
+async function submitBiz() {
+  const btn = document.getElementById("submitBtn");
+  const phone = val("bizwa").replace(/[\s-]/g, "");
+  if (!val("bizname")) return show("Please enter your business name", false);
+  if (!val("bizcat")) return show("Please choose a category", false);
+  if (!/^(0\d{10}|234\d{10}|\+234\d{10})$/.test(phone)) return show("Enter a valid Nigerian number, like 08012345678", false);
+  btn.disabled = true;
+  btn.textContent = "Please wait...";
+  try {
+    const { error } = await sb.from("businesses").insert({
+      owner_id: userId,
+      name: val("bizname"),
+      category_id: Number(val("bizcat")),
+      tagline: val("biztagline"),
+      description: val("bizdesc"),
+      offerings: val("bizoffer"),
+      prices: val("bizprices"),
+      location: val("bizloc"),
+      whatsapp: phone,
+      instagram: val("bizig"),
+      open_to_collab: document.getElementById("bizcollab").checked
+    });
+    if (error) show(error.message, false);
+    else show("Submitted! Your business is now pending approval.", true);
+  } catch (e) {
+    show("Something went wrong: " + e.message, false);
+  }
+  btn.disabled = false;
+  btn.textContent = "Submit for approval";
+}
+
+start();
+</script>
+</body>
+</html>
