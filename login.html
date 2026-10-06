@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login | Students Business Connect</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<style>
+body{font-family:sans-serif;max-width:400px;margin:30px auto;padding:0 16px}
+input,button{width:100%;padding:12px;margin:6px 0;font-size:16px;box-sizing:border-box}
+input{border:2px solid #ccc;border-radius:8px;outline:none;transition:.2s}
+input:focus{border-color:#16a34a;box-shadow:0 0 0 3px rgba(22,163,74,.25)}
+button{background:#111;color:#fff;border:0;border-radius:8px;transition:.15s}
+button:hover{background:#16a34a}
+button:active{transform:scale(.96);background:#15803d}
+button:disabled{opacity:.6}
+#msg{font-weight:bold}
+</style>
+</head>
+<body> 
+  <script>window.onerror=function(m){document.body.insertAdjacentHTML('afterbegin','<p style="color:red;font-weight:bold">'+m+'</p>')}</script>
+<h2>Students Business Connect</h2>
+<input id="fullname" placeholder="Full name (for sign up)" autocomplete="name">
+<input id="email" type="email" placeholder="Email" autocomplete="email">
+<input id="password" type="password" placeholder="Password (min 8 characters)" autocomplete="current-password">
+<button id="signupBtn" onclick="signUp()">Sign up</button>
+<button id="loginBtn" onclick="logIn()">Log in</button>
+<p id="msg"></p>
+
+<script>
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const msg = document.getElementById("msg");
+const fullnameEl = document.getElementById("fullname");
+const emailEl = document.getElementById("email");
+const passwordEl = document.getElementById("password");
+
+function show(text, ok) {
+  msg.textContent = text;
+  msg.style.color = ok ? "#16a34a" : "#dc2626";
+}
+
+async function run(btn, label, task) {
+  btn.disabled = true;
+  btn.textContent = "Please wait...";
+  try {
+    await task();
+  } catch (e) {
+    show("Something went wrong: " + e.message, false);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = label;
+  }
+}
+
+function signUp() {
+  const btn = document.getElementById("signupBtn");
+  if (passwordEl.value.length < 8) return show("Password must be at least 8 characters", false);
+  run(btn, "Sign up", async () => {
+    const { error } = await sb.auth.signUp({
+      email: emailEl.value.trim(),
+      password: passwordEl.value,
+      options: { data: { full_name: fullnameEl.value.trim() } }
+    });
+    error ? show(error.message, false) : show("Account created! Check your email to confirm, then log in.", true);
+  });
+}
+
+function logIn() {
+  const btn = document.getElementById("loginBtn");
+  run(btn, "Log in", async () => {
+    const { error } = await sb.auth.signInWithPassword({
+      email: emailEl.value.trim(),
+      password: passwordEl.value
+    });
+    error ? show(error.message, false) : show("Logged in!", true);
+  });
+}
+</script>
+</body>
+</html>
